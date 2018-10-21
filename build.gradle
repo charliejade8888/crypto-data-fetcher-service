@@ -1,0 +1,122 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+project.ext {
+	cucumberVersion = '1.2.5'
+	junitVersion = '4.12'
+	springBootVersion = '2.0.2.RELEASE'
+	restAssuredVersion = '2.9.0'
+	jsonVersion = '20180130'
+	swaggerVersion = '2.0.2'
+	mockServerVersion = '3.10.4'
+}
+
+sourceSets {
+	test {
+		java {
+			srcDirs 'src/cucumber'
+			srcDirs 'src/cucumber/java'
+			srcDirs 'src/test'
+		}
+	}
+	main {
+		java {
+			srcDirs 'src/main'
+		}
+	}
+}
+
+tasks.withType(Test) {
+	scanForTestClasses = false
+	include "**/*Test.class"
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.6'
+}
+
+task cucumber(type: Exec) {
+	commandLine './cucumber.sh'
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+	manifest {
+		attributes 'Implementation-Title': 'Gradle Jar File Example',
+				'Implementation-Version': "1.0.1",
+				'Main-Class': 'com.tyrell.replicant.crypto.data.fetcher.service.Application'
+	}
+	baseName = project.name + '-all'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+}
+
+jar {
+	baseName = 'crypo-data-fetcher-service'
+	version =  '0.1.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+test {
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+	}
+}
+
+tasks.withType(JavaCompile){
+	options.warnings = false
+}
+
+group = 'com.tyrell.replicant'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// spring
+//	compile("org.springframework.boot:spring-boot-devtools")
+//	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile("io.springfox:springfox-swagger2:" + swaggerVersion)
+	compile("io.springfox:springfox-swagger-ui:" + swaggerVersion)
+	compile("org.springframework.boot:spring-boot-starter-web")
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+
+	// json libararies
+	compile('org.json:json:' + jsonVersion)
+	compile group: 'org.freemarker', name: 'freemarker', version: '2.3.28'
+
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
+	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.5'
+
+
+	compile('com.jayway.jsonpath:json-path')
+
+	// testing frameworks
+	testCompile('info.cukes:cucumber-java:' + cucumberVersion)
+	testCompile('info.cukes:cucumber-junit:' + cucumberVersion)
+	testCompile('info.cukes:cucumber-spring:' + cucumberVersion)
+	testCompile('junit:junit:' + junitVersion)
+	testCompile('org.mock-server:mockserver-netty:' + mockServerVersion)
+	testCompile('com.jayway.restassured:rest-assured:' + restAssuredVersion)
+}
