@@ -12,7 +12,7 @@ Feature: Crypto Data Fetcher Service
   Scenario: fetching daily data for last week
     Given the following daily data is available for bitcoin over the last two days:
       | time       | close   | high   | low     | open    | volumefrom | volumeto     |
-      | 1530748800 | 5761.00 | 6717.9 | 3569.96sdsd | 6741.28 | 59674.47   | 500530201.24 |
+      | 1530748800 | 5761.00 | 6717.9 | 3569.96 | 6741.28 | 59674.47   | 500530201.24 |
       | 1530835200 | 4761.00 | 6717.9 | 2569.96 | 6741.28 | 59674.47   | 500530201.24 |
     When I make a request for daily data "BTC" from "2018-07-05" to "2018-07-06"
     Then the following data should be returned:

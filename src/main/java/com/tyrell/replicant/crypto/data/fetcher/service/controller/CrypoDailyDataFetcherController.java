@@ -35,7 +35,7 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
                 .quoteCurency(quoteCurrency)
                 .build());
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);//TODO not always 200!!!!
     }
 
 
