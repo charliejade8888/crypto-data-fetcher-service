@@ -94,7 +94,8 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
 
 
             //TODO convert epoch time prop to string datetime?EOD
-            //volTo s num of USD trades
+            //volTo is num of USDs traded
+            //volFrom is num of BTCs traded ...not number of transactions, but rather number of units!
 
         }
         String nicelyFormattedResponseBody = output.toString(4);

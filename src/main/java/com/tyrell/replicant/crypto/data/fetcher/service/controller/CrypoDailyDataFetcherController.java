@@ -20,7 +20,6 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
 
     @CrossOrigin(origins = "http://localhost:8080")
     @ApiOperation(value = "Returns historical daily data for basecurrency specified over given date range.")
-
     @RequestMapping(value = "/dailydata", method = RequestMethod.GET)
 //    @RequestMapping(value = "{$daily.path}", method = RequestMethod.GET)
     @Override

@@ -54,6 +54,17 @@ task cucumber(type: Exec) {
 	commandLine './cucumber.sh'
 }
 
+//TODO find a cleaner alt
+task bootRunDev(type: org.springframework.boot.gradle.tasks.run.BootRun, dependsOn: 'build') {
+	group = 'Application'
+
+	doFirst() {
+		main = bootJar.mainClassName
+		classpath = sourceSets.main.runtimeClasspath
+		systemProperty 'spring.profiles.active', 'swagger'
+	}
+}
+
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
 	manifest {
@@ -94,8 +105,8 @@ repositories {
 
 dependencies {
 	// spring
-//	compile("org.springframework.boot:spring-boot-devtools")
-//	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile("org.springframework.boot:spring-boot-devtools")
+	compile('org.springframework.boot:spring-boot-starter-actuator')
 	compile("io.springfox:springfox-swagger2:" + swaggerVersion)
 	compile("io.springfox:springfox-swagger-ui:" + swaggerVersion)
 	compile("org.springframework.boot:spring-boot-starter-web")
