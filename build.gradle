@@ -54,8 +54,7 @@ task cucumber(type: Exec) {
 	commandLine './cucumber.sh'
 }
 
-//TODO find a cleaner alt
-task bootRunDev(type: org.springframework.boot.gradle.tasks.run.BootRun, dependsOn: 'build') {
+task bootRunWithSwagger(type: org.springframework.boot.gradle.tasks.run.BootRun, dependsOn: 'build') {
 	group = 'Application'
 
 	doFirst() {

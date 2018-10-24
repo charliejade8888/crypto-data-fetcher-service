@@ -2,6 +2,8 @@ package com.tyrell.replicant.crypto.data.fetcher.service;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -25,6 +27,8 @@ import static org.springframework.http.HttpMethod.GET;
 @PropertySource("classpath:application.properties")
 @Component("cryptoDailyDataFetcherService")
 public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CryptoDailyDataFetcherService.class);
 
     public static final String FYSM_PARAM_KEY = "fsym"; // from symbol
     public static final String TYSM_PARAM_KEY = "tsym"; // to symbol
@@ -55,7 +59,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         if (!url.startsWith(http)) {
             url = httpUrlPart + url;
         }
-
+//TODO clean up above first!!!!
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         long daysBetween = 0L;
@@ -80,6 +84,9 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
         //remove first element?? or if
 
+        LOGGER.info("Status code is::" + response.getStatusCode());
+        LOGGER.info("Respose body::" +  response.getBody().toString());
+
         JSONArray input = new JSONArray(new JSONObject(response.getBody()).get("Data").toString());
         JSONArray output = new JSONArray();
 
@@ -92,13 +99,13 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
             //input.remove(i);
             output.put(jsonObject);
 
-
-            //TODO convert epoch time prop to string datetime?EOD
             //volTo is num of USDs traded
             //volFrom is num of BTCs traded ...not number of transactions, but rather number of units!
 
         }
         String nicelyFormattedResponseBody = output.toString(4);
+
+        LOGGER.info("response body::" + nicelyFormattedResponseBody);
 
         return nicelyFormattedResponseBody;
     }
