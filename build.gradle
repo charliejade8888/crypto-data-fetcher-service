@@ -129,4 +129,8 @@ dependencies {
 	testCompile('junit:junit:' + junitVersion)
 	testCompile('org.mock-server:mockserver-netty:' + mockServerVersion)
 	testCompile('com.jayway.restassured:rest-assured:' + restAssuredVersion)
+
+// see https://translate.googleusercontent.com/translate_c?depth=1&hl=en&prev=search&rurl=translate.google.com&sl=pt-BR&sp=nmt4&u=http://blog.caelum.com.br/erros-com-jaxb-no-java-9/&xid=17259,15700021,15700124,15700149,15700186,15700191,15700201,15700214,15700227,15700230&usg=ALkJrhimk41LX8kh_bSKFc6M9tlqeLcfnA
+	// https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 }
