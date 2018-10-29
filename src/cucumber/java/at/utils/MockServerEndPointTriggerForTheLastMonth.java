@@ -10,8 +10,9 @@ public class MockServerEndPointTriggerForTheLastMonth implements MockServerEndpo
     @Override
     public MockServerParameterObject createMockServerParameterObject(Environment env, String stubResponseFile) {
         String returnOneMonthsWorthOfDataPlease = "30";
+        String hostNameForMockServer = env.getProperty("crypto.compare.host").replace("http://", "");
         return new MockServerParameterObject.Builder()
-                .host(env.getProperty("crypto.compare.host"))
+                .host(hostNameForMockServer)
                 .path(env.getProperty("crypto.compare.path.daily"))
                 .port(valueOf(env.getProperty("crypto.compare.port")))
                 .fsymParam("BTC")

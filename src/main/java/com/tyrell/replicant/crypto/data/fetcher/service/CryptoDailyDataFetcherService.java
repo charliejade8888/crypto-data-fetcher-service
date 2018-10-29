@@ -51,15 +51,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
 
     //TODO clean this one!!! too big!!!!
     private static String restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
-        String http = "http";
-        String doubleForwardSlash = "//";
-        String colon = ":";
-        String httpUrlPart = http + colon + doubleForwardSlash;
         RestTemplate restTemplate = new RestTemplate();
-        if (!url.startsWith(http)) {
-            url = httpUrlPart + url;
-        }
-//TODO clean up above first!!!!
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         long daysBetween = 0L;
