@@ -46,59 +46,52 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
                 .append(env.getProperty("crypto.compare.port"))
                 .append(env.getProperty("crypto.compare.path.daily"))
                 .toString();
-        return restGet(url, cryptoDataFetcherRestParameterObject);
+        return restGetPrettifiedCryptoCompareResponse(url, cryptoDataFetcherRestParameterObject);
     }
 
-    //TODO clean this one!!! too big!!!!
-    private static String restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
-        RestTemplate restTemplate = new RestTemplate();
+
+    private static long getDaysBetweenStartDateAndEndDate(CryptoDataFetcherRestParameterObject ccrpo) {
         SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-
         long daysBetween = 0L;
-        long oneDay = 1 * 24 * 60 * 60 * 1000;
-
         try {
             Date dateFrom = myFormat.parse(ccrpo.getStartDate());
             Date dateTo = myFormat.parse(ccrpo.getEndDate());
             daysBetween = getDifferenceDays(dateFrom, dateTo);
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOGGER.error("cannot parse dates - start date: " + ccrpo.getStartDate() + " end date: " + ccrpo.getEndDate(), e); //does this print stacktrace too?
         }
-        //needs helper to name converting api param to cryptocompare param
+        return daysBetween;
+    }
+
+    private static ResponseEntity<String> restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
+        RestTemplate restTemplate = new RestTemplate();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam(FYSM_PARAM_KEY, ccrpo.getBaseCurrency())
                 .queryParam(TOTS_PARAM_KEY, convertDateStringToEpoch(ccrpo.getEndDate()))
-                .queryParam(LIMIT_PARAM_KEY, daysBetween)
+                .queryParam(LIMIT_PARAM_KEY, getDaysBetweenStartDateAndEndDate(ccrpo))
                 .queryParam(TYSM_PARAM_KEY, ccrpo.getQuoteCurency()); //TODO if size<=1 only ret first in input
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<?> entity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
-        //remove first element?? or if
+        return restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
+    }
 
-        LOGGER.info("Status code is::" + response.getStatusCode());
-        LOGGER.info("Respose body::" +  response.getBody().toString());
-
-        JSONArray input = new JSONArray(new JSONObject(response.getBody()).get("Data").toString());
+    //TODO clean more!! just pass in response not url and call it prettifyCryptoCompare response!!!
+    private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
+        JSONArray input = new JSONArray(new JSONObject(restGet(url,ccrpo).getBody()).get("Data").toString());
         JSONArray output = new JSONArray();
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");//TODO add hh mm ss
-        for(int i=0; i<input.length(); i++) {
+        for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
             long epochTime = Long.valueOf(jsonObject.get("time").toString());//FIXME!!
             String date = sdf.format(new Date(epochTime*1000));
             jsonObject.put("time", date);
-            //input.remove(i);
             output.put(jsonObject);
-
             //volTo is num of USDs traded
             //volFrom is num of BTCs traded ...not number of transactions, but rather number of units!
-
         }
         String nicelyFormattedResponseBody = output.toString(4);
-
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
-
         return nicelyFormattedResponseBody;
     }
 
@@ -107,6 +100,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
     }
 
+    //TODO gradle jib
     public static long convertDateStringToEpoch(String strDate) {
         long epochSecond = 0L;
         long oneDay = 1 * 24 * 60 * 60;
