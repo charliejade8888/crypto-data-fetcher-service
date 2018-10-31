@@ -69,7 +69,7 @@ public class CryptoDailyDataFetcherServiceTest {
                 .endDate(yesterday)
                 .build(); //put in helper
 
-        // and
+        // and //FIXME!! here  - create stubresponse hmm add extra ftl/method to generate 'expectation' rather than stub cryptocomp response here!
         JSONArray expected = new JSONArray(new JSONObject(createStubResponse("2018/06/20")).get("Data").toString());
 
         // when

@@ -86,10 +86,16 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
             long epochTime = Long.valueOf(jsonObject.get("time").toString());
             String date = sdf.format(new Date(epochTime*1000));
+            String volumeToKey = "volumeto";
+            String volumeFromKey = "volumefrom";
+            String quoteCurrencyVolumeInUnits = jsonObject.get(volumeToKey).toString();
+            String baseCurrencyVolumeInUnits = jsonObject.get(volumeFromKey).toString();
+            jsonObject.remove(volumeToKey);
+            jsonObject.remove(volumeFromKey);
+            jsonObject.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
+            jsonObject.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
             jsonObject.put("time", date);
             output.put(jsonObject);
-            //volTo is num of USDs traded //TODO rename vol params
-            //volFrom is num of BTCs traded ...not number of transactions, but rather number of units!
         }
         String nicelyFormattedResponseBody = output.toString(4);
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
