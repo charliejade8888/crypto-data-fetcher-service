@@ -73,21 +73,22 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<?> entity = new HttpEntity<>(headers);
+        //TODO need to throw exception here if non-200!
         return restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
     }
 
-    //TODO clean more!! just pass in response not url and call it prettifyCryptoCompare response!!!
     private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
-        JSONArray input = new JSONArray(new JSONObject(restGet(url,ccrpo).getBody()).get("Data").toString());
+        String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
+        JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
         JSONArray output = new JSONArray();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");//TODO add hh mm ss
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
         for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
-            long epochTime = Long.valueOf(jsonObject.get("time").toString());//FIXME!!
+            long epochTime = Long.valueOf(jsonObject.get("time").toString());
             String date = sdf.format(new Date(epochTime*1000));
             jsonObject.put("time", date);
             output.put(jsonObject);
-            //volTo is num of USDs traded
+            //volTo is num of USDs traded //TODO rename vol params
             //volFrom is num of BTCs traded ...not number of transactions, but rather number of units!
         }
         String nicelyFormattedResponseBody = output.toString(4);
