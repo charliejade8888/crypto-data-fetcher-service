@@ -43,8 +43,9 @@ public class StepDefinitions {
 
     @Given("^the following daily data is available for bitcoin yesterday:$")
     public void the_following_daily_data_is_available_for_bitcoin_yesterday(DataTable dataTable) throws IOException, InterruptedException {
-        makeStubFromDataTable("daily_BTC_one_day_sample_response.json", dataTable, "nothing to ignore here");
-        startMockServer(env, YESTERDAY, "/tmp/daily_BTC_one_day_sample_response.json");
+        String stubby = "daily_BTC_one_day_sample_cryptocompare_response.json";
+        makeStubFromDataTable(stubby, dataTable, "nothing to ignore here");
+        startMockServer(env, YESTERDAY, "/tmp/" + stubby);
     }
 
     @Given("^the following daily data is available for bitcoin over the last two days:$")
