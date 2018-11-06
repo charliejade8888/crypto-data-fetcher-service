@@ -42,8 +42,8 @@ public class CryptoDailyDataFetcherServiceTest {
     }
 
     //TODO rename ftls see stubby in step defs for example
-
-    public static String createExpectation(String time) throws IOException, TemplateException {
+    //TODO move to utils
+    private static String createExpectation(String time) throws IOException, TemplateException {
         String response;
         Configuration cfg = new Configuration(new Version("2.3.23"));
         cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");

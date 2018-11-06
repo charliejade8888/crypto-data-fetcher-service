@@ -49,39 +49,13 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         return restGetPrettifiedCryptoCompareResponse(url, cryptoDataFetcherRestParameterObject);
     }
 
-
-    private static long getDaysBetweenStartDateAndEndDate(CryptoDataFetcherRestParameterObject ccrpo) {
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
-        long daysBetween = 0L;
-        try {
-            Date dateFrom = myFormat.parse(ccrpo.getStartDate());
-            Date dateTo = myFormat.parse(ccrpo.getEndDate());
-            daysBetween = getDifferenceDays(dateFrom, dateTo);
-        } catch (ParseException e) {
-            LOGGER.error("cannot parse dates - start date: " + ccrpo.getStartDate() + " end date: " + ccrpo.getEndDate(), e); //does this print stacktrace too?
-        }
-        return daysBetween;
-    }
-
-    private static ResponseEntity<String> restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
-        RestTemplate restTemplate = new RestTemplate();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam(FYSM_PARAM_KEY, ccrpo.getBaseCurrency())
-                .queryParam(TOTS_PARAM_KEY, convertDateStringToEpoch(ccrpo.getEndDate()))
-                .queryParam(LIMIT_PARAM_KEY, getDaysBetweenStartDateAndEndDate(ccrpo))
-                .queryParam(TYSM_PARAM_KEY, ccrpo.getQuoteCurency()); //TODO if size<=1 only ret first in input
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-        //TODO need to throw exception here if non-200!
-        return restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
-    }
-
     private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
         String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
         JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
         JSONArray output = new JSONArray();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
+
+       //TODO move to method with name that highlights it makes hr date and hr volume props
         for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
             long epochTime = Long.valueOf(jsonObject.get("time").toString());
@@ -100,6 +74,33 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         String nicelyFormattedResponseBody = output.toString(4);
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
         return nicelyFormattedResponseBody;
+    }
+
+    private static ResponseEntity<String> restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
+        RestTemplate restTemplate = new RestTemplate();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam(FYSM_PARAM_KEY, ccrpo.getBaseCurrency())
+                .queryParam(TOTS_PARAM_KEY, convertDateStringToEpoch(ccrpo.getEndDate()))
+                .queryParam(LIMIT_PARAM_KEY, getDaysBetweenStartDateAndEndDate(ccrpo))
+                .queryParam(TYSM_PARAM_KEY, ccrpo.getQuoteCurency()); //TODO if size<=1 only ret first in input
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        //TODO need to throw exception here if non-200!
+        return restTemplate.exchange(builder.toUriString(), GET, entity, String.class);
+    }
+
+    private static long getDaysBetweenStartDateAndEndDate(CryptoDataFetcherRestParameterObject ccrpo) {
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd");
+        long daysBetween = 0L;
+        try {
+            Date dateFrom = myFormat.parse(ccrpo.getStartDate());
+            Date dateTo = myFormat.parse(ccrpo.getEndDate());
+            daysBetween = getDifferenceDays(dateFrom, dateTo);
+        } catch (ParseException e) {
+            LOGGER.error("cannot parse dates - start date: " + ccrpo.getStartDate() + " end date: " + ccrpo.getEndDate(), e); //does this print stacktrace too?
+        }
+        return daysBetween;
     }
 
     public static long getDifferenceDays(Date startDate, Date endDate) {
