@@ -38,7 +38,7 @@ public class CryptoDailyDataFetcherServiceTest {
 
     @Before
     public void setUp() throws IOException {
-        startMockServer(env, YESTERDAY, "src/test/resources/daily_BTC_one_day_sample_response.json");
+        startMockServer(env, YESTERDAY, "src/test/resources/crypto_compare_daily_BTC_one_day_sample_response.json");
     }
 
     //TODO rename ftls see stubby in step defs for example
@@ -48,7 +48,7 @@ public class CryptoDailyDataFetcherServiceTest {
         Configuration cfg = new Configuration(new Version("2.3.23"));
         cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");
         cfg.setDefaultEncoding("UTF-8");
-        Template template = cfg.getTemplate("daily_BTC_one_day_sample_response_expectation.ftl");
+        Template template = cfg.getTemplate("crypto_data_fetcher_daily_BTC_one_day_sample_response_expectation.ftl");
         Map<String, Object> templateData = new HashMap<>();
         if(!time.isEmpty()) { templateData.put("time", time);}
         try (StringWriter out = new StringWriter()) {

@@ -52,14 +52,30 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
         String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
         JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
+        JSONArray output = createResponseWithDescriptiveVolumeKeys(createResponseWithHumanReadableDate(input));
+        String nicelyFormattedResponseBody = output.toString(4);
+        LOGGER.info("response body::" + nicelyFormattedResponseBody);
+        return nicelyFormattedResponseBody;
+    }
+
+    private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
         JSONArray output = new JSONArray();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
-
-       //TODO move to method with name that highlights it makes hr date and hr volume props
         for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
             long epochTime = Long.valueOf(jsonObject.get("time").toString());
             String date = sdf.format(new Date(epochTime*1000));
+            jsonObject.put("time", date);
+            output.put(jsonObject);
+        }
+        return output;
+    }
+
+    private static JSONArray createResponseWithDescriptiveVolumeKeys(JSONArray input) {
+        JSONArray output = new JSONArray();
+
+        for(int i=0; i<input.length(); i++) { //parallelise??
+            JSONObject jsonObject = new JSONObject(input.get(i).toString());
             String volumeToKey = "volumeto";
             String volumeFromKey = "volumefrom";
             String quoteCurrencyVolumeInUnits = jsonObject.get(volumeToKey).toString();
@@ -68,12 +84,9 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
             jsonObject.remove(volumeFromKey);
             jsonObject.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
             jsonObject.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
-            jsonObject.put("time", date);
             output.put(jsonObject);
         }
-        String nicelyFormattedResponseBody = output.toString(4);
-        LOGGER.info("response body::" + nicelyFormattedResponseBody);
-        return nicelyFormattedResponseBody;
+        return output;
     }
 
     private static ResponseEntity<String> restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {
