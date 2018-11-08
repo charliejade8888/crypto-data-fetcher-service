@@ -74,6 +74,12 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     private static JSONArray createResponseWithDescriptiveVolumeKeys(JSONArray input) {
         JSONArray output = new JSONArray();
 
+
+
+
+
+//        List<HcmOutRestRefLink> costCenterLinks = links.parallelStream().filter(link -> link.getName().equals(costCenterLinkName)).collect(Collectors.toList());
+
         for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
             String volumeToKey = "volumeto";
