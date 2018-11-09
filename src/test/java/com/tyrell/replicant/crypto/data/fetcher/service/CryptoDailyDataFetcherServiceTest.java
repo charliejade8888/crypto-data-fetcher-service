@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import static at.utils.CucumberUtils.startMockServer;
 import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
@@ -47,7 +48,6 @@ public class CryptoDailyDataFetcherServiceTest {
         startMockServer(env, YESTERDAY, "src/test/resources/crypto_compare_daily_BTC_one_day_sample_response.json");
     }
 
-    //TODO rename ftls see stubby in step defs for example
     //TODO move to utils
     private static String createExpectation(String time) throws IOException, TemplateException {
         String response;
@@ -92,8 +92,25 @@ public class CryptoDailyDataFetcherServiceTest {
     }
 
     @Test
-    public void parallelScratchPad() throws IOException, TemplateException {
-        JSONArray expected = new JSONArray("[{\n" +
+    public void streamsAndLambdasScratchPad_operateOnAJSONArray() throws IOException, TemplateException {
+
+        // Streams and lambdas to process collections::
+        // Lambdas and streams really make sense if you use ".parallelStream()" instead of ".stream()".
+        // Then your code will act in some parallel way with the Fork-Join-Thread-Pool and your code speeds up.
+        // Anything else is Old wine in new bottles.
+        // Occasionally lambdas seem to be more expressive.
+        // In other situations you will break your leg if you want to fit you algorithm to lambda and you loose expressiveness.
+
+        // good (improved readability - loop is hidden, only operation visible)
+        // people.filter( p -> p.age() < 19).collect(toList());
+        // list.forEach(System.out::println);
+
+        // bad (reduced readability - lambda abused/used badly here!!) even with method reference version simple for loops slightly easier
+        // probably only makes sense if parallelism required
+        // see below '// and'
+
+        // given
+        JSONArray input = new JSONArray("[{\n" +
                 "    \"high\": \"6817.9\",\n" +
                 "    \"low\": \"6569.96\",\n" +
                 "    \"volumeto\": \"400530201.24\",\n" +
@@ -102,22 +119,35 @@ public class CryptoDailyDataFetcherServiceTest {
                 "    \"close\": \"6761.27\",\n" +
                 "    \"open\": \"6741.28\"\n" +
                 "}]");
-        List<JSONObject> jsonObjects = convert(expected);
-        Stream<JSONObject> newFruits = jsonObjects.parallelStream().map(jsonObject -> {process(jsonObject); return jsonObject;});
-//        newFruits.forEach(fruit->{
-//            System.out.println(fruit.toString(2));
-//        });
-        List<JSONObject> jsonObjects1 = newFruits.collect(Collectors.toList());
-        //TODO okay, now have the stream pout these into a jsonarray, see service class
+        JSONArray output = new JSONArray();
 
+        // and
+        List<JSONObject> jsonObjects = convertToListOfJsonObjectsUsingStreamsLambdas(input);
+        Stream<JSONObject> jsonObjectStream = jsonObjects.parallelStream().map(jsonObject -> {
+            process(jsonObject);
+            return jsonObject;
+        });
+        // or jsonObjects.parallelStream().map(this::apply);
+        // private JSONObject apply(JSONObject jsonObject) {
+        //   process(jsonObject);
+        //   return jsonObject;
+        // } suggested by SonarLint plugin
 
+        // when
+        jsonObjectStream.parallel().forEach(fruit -> {
+            output.put(fruit);
+        }); // or jsonObjectStream.parallel().forEach(output::put); suggested by SonarLint plugin
+
+        // then
+        assertTrue(output.length()>0);
+
+        // also
+        List<JSONObject> jsonObjects1 = jsonObjectStream.collect(Collectors.toList());
     }
 
-
-    public List<JSONObject> convert (JSONArray array) {
+    private List<JSONObject> convertToListOfJsonObjectsUsingStreamsLambdas(JSONArray array) {
         return arrayToStream(array)
                 .map(JSONObject.class::cast).collect(Collectors.toList());
-
     }
 
     @Nonnull
@@ -136,9 +166,6 @@ public class CryptoDailyDataFetcherServiceTest {
         jsonObject.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
         System.err.println(jsonObject.toString(5));
         return jsonObject;
-       // output.put(jsonObject);
     }
-
-
 
 }
