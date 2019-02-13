@@ -29,7 +29,6 @@ import java.util.stream.StreamSupport;
 
 import static at.utils.CucumberUtils.startMockServer;
 import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
@@ -93,22 +92,6 @@ public class CryptoDailyDataFetcherServiceTest {
 
     @Test
     public void streamsAndLambdasScratchPad_operateOnAJSONArray() throws IOException, TemplateException {
-
-        // Streams and lambdas to process collections::
-        // Lambdas and streams really make sense if you use ".parallelStream()" instead of ".stream()".
-        // Then your code will act in some parallel way with the Fork-Join-Thread-Pool and your code speeds up.
-        // Anything else is Old wine in new bottles.
-        // Occasionally lambdas seem to be more expressive.
-        // In other situations you will break your leg if you want to fit you algorithm to lambda and you loose expressiveness.
-
-        // good (improved readability - loop is hidden, only operation visible)
-        // people.filter( p -> p.age() < 19).collect(toList());
-        // list.forEach(System.out::println);
-
-        // bad (reduced readability - lambda abused/used badly here!!) even with method reference version simple for loops slightly easier
-        // probably only makes sense if parallelism required
-        // see below '// and'
-
         // given
         JSONArray input = new JSONArray("[{\n" +
                 "    \"high\": \"6817.9\",\n" +
@@ -119,32 +102,28 @@ public class CryptoDailyDataFetcherServiceTest {
                 "    \"close\": \"6761.27\",\n" +
                 "    \"open\": \"6741.28\"\n" +
                 "}]");
+
+        input.put(input.get(0));
         JSONArray output = new JSONArray();
 
         // and
         List<JSONObject> jsonObjects = convertToListOfJsonObjectsUsingStreamsLambdas(input);
         Stream<JSONObject> jsonObjectStream = jsonObjects.parallelStream().map(jsonObject -> {
-            process(jsonObject);
-            return jsonObject;
+            JSONObject processed = process(jsonObject);
+            return processed; //tODO just return function!! hmmm process meyhod is a muator!! it shoudldnt FIXME!!!
         });
-        // or jsonObjects.parallelStream().map(this::apply);
-        // private JSONObject apply(JSONObject jsonObject) {
-        //   process(jsonObject);
-        //   return jsonObject;
-        // } suggested by SonarLint plugin
-
-        // when
-        jsonObjectStream.parallel().forEach(fruit -> {
-            output.put(fruit);
-        }); // or jsonObjectStream.parallel().forEach(output::put); suggested by SonarLint plugin
-
-        // then
-        assertTrue(output.length()>0);
 
         // also
         List<JSONObject> jsonObjects1 = jsonObjectStream.collect(Collectors.toList());
+
+        JSONArray jsonArray2 = new JSONArray(jsonObjects);
+
+        System.err.println(jsonArray2.toString(5));
+
+
     }
 
+    //TODO use parallelism
     private List<JSONObject> convertToListOfJsonObjectsUsingStreamsLambdas(JSONArray array) {
         return arrayToStream(array)
                 .map(JSONObject.class::cast).collect(Collectors.toList());
@@ -152,20 +131,20 @@ public class CryptoDailyDataFetcherServiceTest {
 
     @Nonnull
     private static Stream<Object> arrayToStream(JSONArray array) {
-        return StreamSupport.stream(array.spliterator(), false);
+        return StreamSupport.stream(array.spliterator(), true);
     }
 
     private JSONObject process(JSONObject jsonObject) {
+        JSONObject processed = new JSONObject(jsonObject.toString());
         String volumeToKey = "volumeto";
         String volumeFromKey = "volumefrom";
-        String quoteCurrencyVolumeInUnits = jsonObject.get(volumeToKey).toString();
-        String baseCurrencyVolumeInUnits = jsonObject.get(volumeFromKey).toString();
-        jsonObject.remove(volumeToKey);
-        jsonObject.remove(volumeFromKey);
-        jsonObject.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
-        jsonObject.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
-        System.err.println(jsonObject.toString(5));
-        return jsonObject;
+        String quoteCurrencyVolumeInUnits = processed.get(volumeToKey).toString();
+        String baseCurrencyVolumeInUnits = processed.get(volumeFromKey).toString();
+        processed.remove(volumeToKey);
+        processed.remove(volumeFromKey);
+        processed.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
+        processed.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
+        return processed;
     }
 
 }

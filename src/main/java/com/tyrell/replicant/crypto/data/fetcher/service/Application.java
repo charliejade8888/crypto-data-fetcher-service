@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application {
 
 	//TODO swagger in sep config file with profile
-
+//TODO banner.txt
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}

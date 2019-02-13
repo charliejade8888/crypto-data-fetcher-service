@@ -52,6 +52,8 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
         String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
         JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
+
+        //run parallelism here!!! //TODO
         JSONArray output = createResponseWithDescriptiveVolumeKeys(createResponseWithHumanReadableDate(input));
         String nicelyFormattedResponseBody = output.toString(4);
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
