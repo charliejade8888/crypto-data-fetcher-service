@@ -19,7 +19,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.springframework.http.HttpMethod.GET;
 
@@ -53,11 +57,24 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
         JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
 
-        //run parallelism here!!! //TODO
-        JSONArray output = createResponseWithDescriptiveVolumeKeys(createResponseWithHumanReadableDate(input));
+        List<JSONObject> jsonObjects = convertToListOfJsonObjectsUsingStreamsLambdas(createResponseWithHumanReadableDate(input));
+        Stream<JSONObject> jsonObjectStream = jsonObjects.parallelStream().map(CryptoDailyDataFetcherService::createResponseWithDescriptiveVolumeKeys);
+
+        JSONArray output = new JSONArray(jsonObjectStream.collect(Collectors.toList()));
         String nicelyFormattedResponseBody = output.toString(4);
+
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
         return nicelyFormattedResponseBody;
+    }
+
+    private static List<JSONObject> convertToListOfJsonObjectsUsingStreamsLambdas(JSONArray array) {
+        return arrayToStream(array).parallel()
+                .map(JSONObject.class::cast).collect(Collectors.toList());
+    }
+
+//    @Nonnull
+    private static Stream<Object> arrayToStream(JSONArray array) {
+        return StreamSupport.stream(array.spliterator(), true);
     }
 
     private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
@@ -73,21 +90,17 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         return output;
     }
 
-    private static JSONArray createResponseWithDescriptiveVolumeKeys(JSONArray input) {
-        JSONArray output = new JSONArray();
-        for(int i=0; i<input.length(); i++) {
-            JSONObject jsonObject = new JSONObject(input.get(i).toString());
-            String volumeToKey = "volumeto";
-            String volumeFromKey = "volumefrom";
-            String quoteCurrencyVolumeInUnits = jsonObject.get(volumeToKey).toString();
-            String baseCurrencyVolumeInUnits = jsonObject.get(volumeFromKey).toString();
-            jsonObject.remove(volumeToKey);
-            jsonObject.remove(volumeFromKey);
-            jsonObject.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
-            jsonObject.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
-            output.put(jsonObject);
-        }
-        return output;
+    private static JSONObject createResponseWithDescriptiveVolumeKeys(JSONObject jsonObject) {
+        JSONObject processed = new JSONObject(jsonObject.toString());
+        String volumeToKey = "volumeto";
+        String volumeFromKey = "volumefrom";
+        String quoteCurrencyVolumeInUnits = processed.get(volumeToKey).toString();
+        String baseCurrencyVolumeInUnits = processed.get(volumeFromKey).toString();
+        processed.remove(volumeToKey);
+        processed.remove(volumeFromKey);
+        processed.put("baseCurrencyVolumeInUnits", baseCurrencyVolumeInUnits);
+        processed.put("quoteCurrencyVolumeInUnits", quoteCurrencyVolumeInUnits);
+        return processed;
     }
 
     private static ResponseEntity<String> restGet(String url, CryptoDataFetcherRestParameterObject ccrpo) {

@@ -28,7 +28,7 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
             @RequestParam("startdate") String startDate,
             @RequestParam("enddate") String endDate) {
 
-        String result = cryptoDailyDataFetcherService.getDailyData(new CryptoDataFetcherRestParameterObject.Builder()
+        String result = cryptoDailyDataFetcherService.getDailyData(CryptoDataFetcherRestParameterObject.builder()
                 .endDate(endDate)
                 .startDate(startDate)
                 .baseCurrency(baseCurrency)

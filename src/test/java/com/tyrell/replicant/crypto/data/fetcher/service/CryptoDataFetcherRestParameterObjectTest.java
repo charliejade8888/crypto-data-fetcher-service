@@ -16,8 +16,7 @@ public class CryptoDataFetcherRestParameterObjectTest {
 
     @BeforeClass
     public static void setUp() {
-        CryptoDataFetcherRestParameterObject.Builder builder  = new CryptoDataFetcherRestParameterObject.Builder();
-        underTest = builder.baseCurrency(EXPECTED_BASE_CURRENCY)
+        underTest = CryptoDataFetcherRestParameterObject.builder().baseCurrency(EXPECTED_BASE_CURRENCY)
                 .quoteCurency(EXPECTED_QUOTE_CURRENCY)
                 .startDate(EXPECTED_START_DATE)
                 .endDate(EXPECTED_END_DATE)

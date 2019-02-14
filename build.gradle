@@ -112,6 +112,8 @@ dependencies {
 	testCompile("org.springframework.boot:spring-boot-starter-test"){
 		exclude group: "com.vaadin.external.google", module:"android-json"
 	}
+	compileOnly "org.projectlombok:lombok:1.16.16"
+
 
 	// json libararies
 	compile('org.json:json:' + jsonVersion)
