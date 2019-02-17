@@ -57,10 +57,12 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
         JSONArray input = new JSONArray(new JSONObject(originalCryptCompareResponseBody).get("Data").toString());
 
-        List<JSONObject> jsonObjects = convertToListOfJsonObjectsUsingStreamsLambdas(createResponseWithHumanReadableDate(input));
-        Stream<JSONObject> jsonObjectStream = jsonObjects.parallelStream().map(CryptoDailyDataFetcherService::createResponseWithDescriptiveVolumeKeys);
+        List<JSONObject> cryptoDataListWithHumanReadableDates = convertToListOfJsonObjectsUsingStreamsLambdas(
+                createResponseWithHumanReadableDate(input));
+        Stream<JSONObject> cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys = cryptoDataListWithHumanReadableDates
+                .parallelStream().map(CryptoDailyDataFetcherService::createResponseWithDescriptiveVolumeKeys);
 
-        JSONArray output = new JSONArray(jsonObjectStream.collect(Collectors.toList()));
+        JSONArray output = new JSONArray(cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys.collect(Collectors.toList()));
         String nicelyFormattedResponseBody = output.toString(4);
 
         LOGGER.info("response body::" + nicelyFormattedResponseBody);
@@ -77,6 +79,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         return StreamSupport.stream(array.spliterator(), true);
     }
 
+    //TODO parrelelise this ::::::::::
     private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
         JSONArray output = new JSONArray();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
