@@ -82,6 +82,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     //TODO parrelelise this ::::::::::
     private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
         JSONArray output = new JSONArray();
+//        convertToListOfJsonObjectsUsingStreamsLambdas()
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
         for(int i=0; i<input.length(); i++) { //parallelise??
             JSONObject jsonObject = new JSONObject(input.get(i).toString());
