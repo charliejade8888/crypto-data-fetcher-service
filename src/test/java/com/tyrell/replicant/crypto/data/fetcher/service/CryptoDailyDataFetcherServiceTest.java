@@ -31,6 +31,8 @@ import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
 @SpringBootTest
 public class CryptoDailyDataFetcherServiceTest {
 
+    //TODO stub restopersations?? inject in classes=... highlight needs service real in there too
+
     @Autowired
     ICryptoDataFetcherService cryptoDailyDataFetcherService;
 

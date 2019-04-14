@@ -10,6 +10,10 @@ buildscript {
 	}
 }
 
+plugins {
+	id "io.freefair.lombok" version "3.2.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -46,12 +50,21 @@ tasks.withType(Test) {
 	include "**/*Test.class"
 }
 
-task wrapper(type: Wrapper) {
-	gradleVersion = '4.6'
+//Dynamic exclude through property defined in the build.gradle file
+//to run cucumber test use ./gradlew build -Pcucumber
+test {
+	if (project.hasProperty('cucumber')) {
+		include "**/*Runner.class"
+		exclude "**/*Test.class"
+	}
 }
 
-task cucumber(type: Exec) {
-	commandLine './cucumber.sh'
+//task wrapper(type: Wrapper) {
+//	gradleVersion = '5.3.1'
+//}
+
+task ut(type: Exec) {
+	commandLine './ut.sh'
 }
 
 task bootRunWithSwagger(type: org.springframework.boot.gradle.tasks.run.BootRun, dependsOn: 'build') {
@@ -81,8 +94,8 @@ jar {
 	version =  '0.1.0'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 test {
 	testLogging {
@@ -96,7 +109,6 @@ tasks.withType(JavaCompile){
 
 group = 'com.tyrell.replicant'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
 
 repositories {
 	mavenCentral()

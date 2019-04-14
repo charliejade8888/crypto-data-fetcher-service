@@ -1,5 +1,6 @@
 package at.utils;
 
+//TODO lombok
 public class MockServerParameterObject {
 
     private String host;

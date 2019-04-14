@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+//tODO will disappear when lomboij done
+//TODO chek all with sonar lint
 public class CryptoDataFetcherRestParameterObjectTest {
 
     private static final String EXPECTED_BASE_CURRENCY = "BTC";

@@ -31,7 +31,7 @@ import static org.springframework.http.HttpMethod.GET;
 @PropertySource("classpath:application.properties")
 @Component("cryptoDailyDataFetcherService")
 public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService {
-
+//todo have an application-test.properties too!!
     private static final Logger LOGGER = LoggerFactory.getLogger(CryptoDailyDataFetcherService.class);
 
     public static final String FYSM_PARAM_KEY = "fsym"; // from symbol
@@ -77,6 +77,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         return StreamSupport.stream(array.spliterator(), true);
     }
 
+    //TODO parrelelise this ::::::::::
     private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
         JSONArray output = new JSONArray();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss

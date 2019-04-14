@@ -23,6 +23,8 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CryptoDataFetcherControllerTest {
 
+    //TODO use @springboottest's classes rathrer than using reflection!!
+
     @LocalServerPort
     private int port;
 
