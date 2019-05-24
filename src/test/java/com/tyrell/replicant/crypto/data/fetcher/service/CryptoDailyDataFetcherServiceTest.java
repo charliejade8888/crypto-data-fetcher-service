@@ -26,7 +26,7 @@ import static at.utils.CucumberUtils.startMockServer;
 import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles("test")
+@ActiveProfiles("prod")
 @PropertySource("classpath:crypto-compare.properties")
 @SpringBootTest
 public class CryptoDailyDataFetcherServiceTest {

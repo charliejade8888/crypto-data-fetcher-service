@@ -15,8 +15,12 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
     @Value("${quote.currency}")
     private String quoteCurrency;
 
+    private final ICryptoDataFetcherService cryptoDailyDataFetcherService;
+
     @Autowired
-    private ICryptoDataFetcherService cryptoDailyDataFetcherService;
+    public CrypoDailyDataFetcherController(ICryptoDataFetcherService cryptoDailyDataFetcherService) {
+        this.cryptoDailyDataFetcherService = cryptoDailyDataFetcherService;
+    }
 
     @CrossOrigin(origins = "http://localhost:8080")
     @ApiOperation(value = "Returns historical daily data for basecurrency specified over given date range.")
@@ -40,3 +44,4 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
 
 
 }
+//TODO dockerise
