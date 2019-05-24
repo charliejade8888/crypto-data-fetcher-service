@@ -28,6 +28,8 @@ import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("prod")
 @PropertySource("classpath:crypto-compare.properties")
+@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application-cucumber.properties")
 @SpringBootTest
 public class CryptoDailyDataFetcherServiceTest {
 
