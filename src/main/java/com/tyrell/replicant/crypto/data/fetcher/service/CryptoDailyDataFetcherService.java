@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -28,7 +27,6 @@ import java.util.stream.StreamSupport;
 
 import static org.springframework.http.HttpMethod.GET;
 
-@Profile("prod")
 @PropertySource("classpath:crypto-compare.properties")
 @PropertySource("classpath:application.properties")
 @Component("cryptoDailyDataFetcherService")
