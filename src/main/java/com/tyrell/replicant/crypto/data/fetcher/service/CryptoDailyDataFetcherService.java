@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.lang.Long.parseLong;
 import static org.springframework.http.HttpMethod.GET;
 
 @PropertySource("classpath:crypto-compare.properties")
@@ -42,7 +43,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     public static final String LIMIT_PARAM_KEY = "limit"; // num of data points
 
     @Autowired
-    Environment env;
+    private Environment env;
 
     @Override
     public String getDailyData(CryptoDataFetcherRestParameterObject cryptoDataFetcherRestParameterObject) {
@@ -58,20 +59,25 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
     private static class Helper {
 
         private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
-            String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
-            Object data = new JSONObject(originalCryptCompareResponseBody).get("Data"); //extract data section
-            JSONArray input = new JSONArray(data.toString());
+            JSONArray data = extractDataSectionFromCryptoCompareResponse(url, ccrpo);
 
             List<JSONObject> cryptoDataListWithHumanReadableDates = convertToListOfJsonObjectsUsingStreamsLambdas(
-                    createResponseWithHumanReadableDate(input));
+                    createResponseWithHumanReadableDate(data));
+
             Stream<JSONObject> cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys = cryptoDataListWithHumanReadableDates
                     .parallelStream().map(CryptoDailyDataFetcherService.Helper::createResponseWithDescriptiveVolumeKeys);
 
             JSONArray output = new JSONArray(cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys.collect(Collectors.toList()));
             String nicelyFormattedResponseBody = output.toString(4);
 
-            LOGGER.info("response body::" + nicelyFormattedResponseBody);
+            LOGGER.info("response body::" + nicelyFormattedResponseBody); //TODO  consider log at entry p exit consider aspects??
             return nicelyFormattedResponseBody;
+        }
+
+        private static JSONArray extractDataSectionFromCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
+            String originalCryptCompareResponseBody = restGet(url,ccrpo).getBody();
+            Object data = new JSONObject(originalCryptCompareResponseBody).get("Data");
+            return new JSONArray(data.toString());
         }
 
         private static List<JSONObject> convertToListOfJsonObjectsUsingStreamsLambdas(JSONArray array) {
@@ -85,7 +91,7 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
         }
 
         private static JSONObject convertEpochTimeDateFieldOfJSONObjectToHumanReadableDate(JSONObject jsonObject) {
-            long epochTime = Long.valueOf(jsonObject.get("time").toString());
+            long epochTime = parseLong(jsonObject.getString("time"));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); //could add hh mm ss
             String date = sdf.format(new Date(epochTime*1000));
             JSONObject converted = new JSONObject(jsonObject.toString());
@@ -95,7 +101,6 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
 
         private static JSONArray createResponseWithHumanReadableDate(JSONArray input) {
             JSONArray output;
-
             List<JSONObject> originalList = convertToListOfJsonObjectsUsingStreamsLambdas(input);
             List<JSONObject> convertedList = originalList.parallelStream()
                     .map(CryptoDailyDataFetcherService.Helper::convertEpochTimeDateFieldOfJSONObjectToHumanReadableDate).collect(Collectors.toList());
