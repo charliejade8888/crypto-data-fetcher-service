@@ -42,5 +42,4 @@ public class CrypoDailyDataFetcherController implements ICrypoDataFetcherControl
         return new ResponseEntity<>(result, HttpStatus.OK);//TODO not always 200!!!!
     }
 
-
 }

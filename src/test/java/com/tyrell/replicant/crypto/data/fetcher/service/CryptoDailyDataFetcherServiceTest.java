@@ -44,23 +44,6 @@ public class CryptoDailyDataFetcherServiceTest {
         startMockServer(env, YESTERDAY, "src/test/resources/crypto_compare_daily_BTC_one_day_sample_response.json");
     }
 
-    //TODO move to utils
-    private static String createExpectation(String time) throws IOException, TemplateException {
-        String response;
-        Configuration cfg = new Configuration(new Version("2.3.23"));
-        cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");
-        cfg.setDefaultEncoding("UTF-8");
-        Template template = cfg.getTemplate("crypto_data_fetcher_daily_BTC_one_day_sample_response_expectation.ftl");
-        Map<String, Object> templateData = new HashMap<>();
-        if(!time.isEmpty()) { templateData.put("time", time);}
-        try (StringWriter out = new StringWriter()) {
-            template.process(templateData, out);
-            response = out.getBuffer().toString();
-            out.flush();
-        }
-        return response;
-    }
-
     @Test
     public void testgetDailyData() throws IOException, TemplateException {
         // given
@@ -82,6 +65,22 @@ public class CryptoDailyDataFetcherServiceTest {
 
         // then
         JSONAssert.assertEquals(expected, actual, false);
+    }
+
+    private static String createExpectation(String time) throws IOException, TemplateException {
+        String response;
+        Configuration cfg = new Configuration(new Version("2.3.23"));
+        cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");
+        cfg.setDefaultEncoding("UTF-8");
+        Template template = cfg.getTemplate("crypto_data_fetcher_daily_BTC_one_day_sample_response_expectation.ftl");
+        Map<String, Object> templateData = new HashMap<>();
+        if(!time.isEmpty()) { templateData.put("time", time);}
+        try (StringWriter out = new StringWriter()) {
+            template.process(templateData, out);
+            response = out.getBuffer().toString();
+            out.flush();
+        }
+        return response;
     }
 
 }

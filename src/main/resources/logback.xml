@@ -15,7 +15,7 @@
     <!--Rolling File Appender-->
     <appender name="File-Logger" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-        <file>${LOG_PATH}/camellog.log</file>
+        <file>${LOG_PATH}/crypto-data-fetcher.log</file>
 
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
@@ -30,10 +30,8 @@
             <maxHistory>10</maxHistory>
             <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
-
     </appender>
-
-
+    
     <root level="info">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="File-Logger"/>

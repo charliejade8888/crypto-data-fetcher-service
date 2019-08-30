@@ -32,11 +32,9 @@ import static org.springframework.http.HttpMethod.GET;
 @PropertySource("classpath:application.properties")
 @Component("cryptoDailyDataFetcherService")
 public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService {
-//todo have an application-test.properties too!!
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CryptoDailyDataFetcherService.class);
 
-    //TODO put in props
-    //TODO address yellow sonar lint issues
     public static final String FYSM_PARAM_KEY = "fsym"; // from symbol
     public static final String TYSM_PARAM_KEY = "tsym"; // to symbol
     public static final String TOTS_PARAM_KEY = "toTs"; // end date in past
@@ -60,18 +58,24 @@ public class CryptoDailyDataFetcherService implements ICryptoDataFetcherService 
 
         private static String restGetPrettifiedCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
             JSONArray data = extractDataSectionFromCryptoCompareResponse(url, ccrpo);
-
-            List<JSONObject> cryptoDataListWithHumanReadableDates = convertToListOfJsonObjectsUsingStreamsLambdas(
-                    createResponseWithHumanReadableDate(data));
-
-            Stream<JSONObject> cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys = cryptoDataListWithHumanReadableDates
-                    .parallelStream().map(CryptoDailyDataFetcherService.Helper::createResponseWithDescriptiveVolumeKeys);
-
-            JSONArray output = new JSONArray(cryptoDataStreamWithHumanReadableDatesAndDescriptiveVolumeKeys.collect(Collectors.toList()));
-            String nicelyFormattedResponseBody = output.toString(4);
-
+            data = prettifyData(data);
+            String nicelyFormattedResponseBody = data.toString(4);
             LOGGER.info("response body::" + nicelyFormattedResponseBody); //TODO  consider log at entry p exit consider aspects??
             return nicelyFormattedResponseBody;
+        }
+
+        private static JSONArray prettifyData(JSONArray data) {
+            List<JSONObject> cryptoDataListWithHumanReadableDates = transformDataSectionToHaveHumanReadableDates(data);
+            return transformDataToHaveDescriptiveVolumeKeys(cryptoDataListWithHumanReadableDates);
+        }
+
+        private static List<JSONObject> transformDataSectionToHaveHumanReadableDates(JSONArray data) {
+            return convertToListOfJsonObjectsUsingStreamsLambdas(createResponseWithHumanReadableDate(data));
+        }
+
+        private static JSONArray transformDataToHaveDescriptiveVolumeKeys(List<JSONObject> input) {
+            Stream<JSONObject> s = input.parallelStream().map(CryptoDailyDataFetcherService.Helper::createResponseWithDescriptiveVolumeKeys);
+            return new JSONArray(s.collect(Collectors.toList()));
         }
 
         private static JSONArray extractDataSectionFromCryptoCompareResponse(String url, CryptoDataFetcherRestParameterObject ccrpo) {
