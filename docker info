@@ -1,0 +1,46 @@
+Put in text file in crypto
+
+apply plugin: "org.springframework.boot"
+apply plugin: "com.bmuschko.docker-spring-boot-application"
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter"
+    runtimeOnly project(":service:adapter-rest")
+    runtimeOnly "org.springframework.boot:spring-boot-starter-actuator"
+
+    testImplementation project(":service:domain-business")
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation project(":service:adapter-rest")
+}
+
+jar { enabled = true }
+bootJar {
+    enabled = true
+
+    manifest {
+        attributes 'Start-Class': "co.uk.stannah.configurator.Application"
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
+docker {
+    springBootApplication {
+        baseImage = 'openjdk:11-jre'
+        images = ["${System.env.DOCKER_IMAGE_TAG}"]
+    }
+    registryCredentials {
+        url = "${System.env.DOCKER_URL}"
+        username = "${System.env.DOCKER_USERNAME}"
+        password = "${System.env.DOCKER_PASSWORD}"
+    }
+}
+
+dockerBuildImage.dependsOn test
+
+#!/bin/sh
+docker tag $(docker images | awk '{print $1}' | awk 'NR==2') stairlift.azurecr.io/stannah-configurator.service/application
+docker login --username stairlift --password 12FJL7LoJcrPBBZ1pAZgTBsDZnP+Mm3L https://stairlift.azurecr.io
+docker push stairlift.azurecr.io/stannah-configurator.service/application

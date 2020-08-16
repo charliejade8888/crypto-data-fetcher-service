@@ -2,13 +2,19 @@ package com.tyrell.replicant.crypto.data.fetcher.service.controller;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import com.tyrell.replicant.crypto.data.fetcher.service.Application;
 import com.tyrell.replicant.crypto.data.fetcher.service.ICryptoDataFetcherService;
+import com.tyrell.replicant.crypto.data.fetcher.service.stubs.StubCryptoDataFetcherService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -20,27 +26,30 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
+@Import(CryptoDataFetcherControllerTest.Config.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CryptoDataFetcherControllerTest {
 
-    //TODO use @springboottest's classes rathrer than using reflection!!
+     @TestConfiguration
+     static class Config {
+        @Bean
+        CrypoDailyDataFetcherController crypoDailyDataFetcherController() {
+            return new CrypoDailyDataFetcherController(new StubCryptoDataFetcherService());
+        } //OKay in spring context... spring is habdling DI here
+    }
+    //TODO try contrsuctor inj with static final ConcreteType var
+    //TODO consder sonmez nomocks approach!!
+
+    //TODO try a setter injection example with??? Environment??/Other
+    // I guess your bean will constructor then run setter on it!!
+    // setter takes autowired private too???  - uses static final?? required=false on setters
+    // also update concrete vs interface autowire
+    // look for example of this in sia book, may need latest look on mannings website
 
     @LocalServerPort
     private int port;
 
-    @Autowired
-    ICryptoDataFetcherService stubCryptoDataFetcherService;
-
-    @Autowired
-    ICrypoDataFetcherController cryptoDailyDataFetcherController;// make Icontroller w 2 versions!! daily + intra
-
     //TODO download all and put in DB!!!!
-
-    @Before
-    public void setUp() {
-        String fieldToReplace = "cryptoDailyDataFetcherService";
-        setField(cryptoDailyDataFetcherController, fieldToReplace, stubCryptoDataFetcherService);
-    }
 
     @Test
     public void testGetCryptoDailyData() {

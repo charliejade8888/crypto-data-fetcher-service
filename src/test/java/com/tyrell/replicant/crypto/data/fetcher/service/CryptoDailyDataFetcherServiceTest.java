@@ -31,56 +31,73 @@ import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
 @SpringBootTest
 public class CryptoDailyDataFetcherServiceTest {
 
-    //TODO stub restopersations?? inject in classes=... highlight needs service real in there too
+  // TODO stub restopersations?? inject in classes=... highlight needs service real in there too
+  // ..try with/out @SpringBootTest
+  // try junit 5!!
+  // try junit 5!!
+  // https://docs.gradle.org/current/userguide/java_library_plugin.html
+  //
+  // For monoliths really where each module is a library.
+  //
+  // Google/be aware of multimodule gradle projects as these come before microservices!
+  //  DDD many ways to get crude wifevtest to pass if SO I rest then build model and have get serve
+  // up one scenario!!
+  // try jacoco!
+  // google checkstyle plugin used
+  // put all udseful here in TODOs/README.md!
 
-    @Autowired
-    ICryptoDataFetcherService cryptoDailyDataFetcherService;
+  @Autowired ICryptoDataFetcherService cryptoDailyDataFetcherService;
 
-    @Autowired
-    private Environment env;
+  @Autowired private Environment env;
 
-    @Before
-    public void setUp() throws IOException {
-        startMockServer(env, YESTERDAY, "src/test/resources/crypto_compare_daily_BTC_one_day_sample_response.json");
+  @Before
+  public void setUp() throws IOException {
+    startMockServer(
+        env, YESTERDAY, "src/test/resources/crypto_compare_daily_BTC_one_day_sample_response.json");
+  }
+
+  @Test
+  public void testgetDailyData() throws IOException, TemplateException {
+    // given
+    String yesterday = "2018-06-20";
+    CryptoDataFetcherRestParameterObject cryptoDataFetcherRestParameterObject =
+        CryptoDataFetcherRestParameterObject.builder()
+            .baseCurrency("BTC")
+            .quoteCurency(env.getProperty("quote.currency"))
+            .startDate(yesterday)
+            .endDate(yesterday)
+            .build(); // put in helper
+
+    // and
+    JSONArray expected = new JSONArray(createExpectation(""));
+
+    Stream.of(expected).parallel().forEach(System.out::println);
+
+    // when
+    JSONArray actual =
+        new JSONArray(
+            cryptoDailyDataFetcherService.getDailyData(cryptoDataFetcherRestParameterObject));
+
+    // then
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  private static String createExpectation(String time) throws IOException, TemplateException {
+    String response;
+    Configuration cfg = new Configuration(new Version("2.3.23"));
+    cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");
+    cfg.setDefaultEncoding("UTF-8");
+    Template template =
+        cfg.getTemplate("crypto_data_fetcher_daily_BTC_one_day_sample_response_expectation.ftl");
+    Map<String, Object> templateData = new HashMap<>();
+    if (!time.isEmpty()) {
+      templateData.put("time", time);
     }
-
-    @Test
-    public void testgetDailyData() throws IOException, TemplateException {
-        // given
-        String yesterday = "2018-06-20";
-        CryptoDataFetcherRestParameterObject cryptoDataFetcherRestParameterObject = CryptoDataFetcherRestParameterObject.builder()
-                .baseCurrency("BTC")
-                .quoteCurency(env.getProperty("quote.currency"))
-                .startDate(yesterday)
-                .endDate(yesterday)
-                .build(); //put in helper
-
-        // and
-        JSONArray expected = new JSONArray(createExpectation(""));
-
-        Stream.of(expected).parallel().forEach(System.out::println);
-
-        // when
-        JSONArray actual = new JSONArray(cryptoDailyDataFetcherService.getDailyData(cryptoDataFetcherRestParameterObject));
-
-        // then
-        JSONAssert.assertEquals(expected, actual, false);
+    try (StringWriter out = new StringWriter()) {
+      template.process(templateData, out);
+      response = out.getBuffer().toString();
+      out.flush();
     }
-
-    private static String createExpectation(String time) throws IOException, TemplateException {
-        String response;
-        Configuration cfg = new Configuration(new Version("2.3.23"));
-        cfg.setClassForTemplateLoading(CryptoDailyDataFetcherServiceTest.class, "/");
-        cfg.setDefaultEncoding("UTF-8");
-        Template template = cfg.getTemplate("crypto_data_fetcher_daily_BTC_one_day_sample_response_expectation.ftl");
-        Map<String, Object> templateData = new HashMap<>();
-        if(!time.isEmpty()) { templateData.put("time", time);}
-        try (StringWriter out = new StringWriter()) {
-            template.process(templateData, out);
-            response = out.getBuffer().toString();
-            out.flush();
-        }
-        return response;
-    }
-
+    return response;
+  }
 }
