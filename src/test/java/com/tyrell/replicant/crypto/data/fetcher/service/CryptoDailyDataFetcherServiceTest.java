@@ -28,6 +28,7 @@ import static at.utils.MockServerEndPointTriggerCriteria.YESTERDAY;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @PropertySource("classpath:crypto-compare.properties")
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS) //start this test class with a fresh spring context so no oither tests interfere here!!
 @SpringBootTest
 public class CryptoDailyDataFetcherServiceTest {
 
